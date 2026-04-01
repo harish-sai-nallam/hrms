@@ -1,6 +1,8 @@
-import { payslipData } from '@/utils/dummyData';
+import useAllData from '@/utils/dummyData';
 
-const ManagerSelfSalary = () => (
+const ManagerSelfSalary = () => {
+ const { payslip } = useAllData();
+  return (
   <div className="space-y-6 animate-fade-in">
     <div>
       <h1 className="text-2xl font-bold text-foreground">My Salary</h1>
@@ -15,30 +17,30 @@ const ManagerSelfSalary = () => (
         <div>
           <h4 className="mb-3 font-semibold text-foreground">Earnings</h4>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-muted-foreground">Basic Salary</span><span className="text-foreground">${payslipData.basicSalary}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">HRA</span><span className="text-foreground">${payslipData.hra}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Conveyance</span><span className="text-foreground">${payslipData.conveyance}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Medical</span><span className="text-foreground">${payslipData.medicalAllowance}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Special Allowance</span><span className="text-foreground">${payslipData.specialAllowance}</span></div>
-            <div className="flex justify-between border-t pt-2 font-semibold"><span className="text-foreground">Gross Earnings</span><span className="text-foreground">${payslipData.grossEarnings}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Basic Salary</span><span className="text-foreground">${payslip.basicSalary}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">HRA</span><span className="text-foreground">${payslip.hra}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Conveyance</span><span className="text-foreground">${payslip.conveyance}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Medical</span><span className="text-foreground">${payslip.medicalAllowance}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Special Allowance</span><span className="text-foreground">${payslip.specialAllowance}</span></div>
+            <div className="flex justify-between border-t pt-2 font-semibold"><span className="text-foreground">Gross Earnings</span><span className="text-foreground">${payslip.grossEarnings}</span></div>
           </div>
         </div>
         <div>
           <h4 className="mb-3 font-semibold text-foreground">Deductions</h4>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-muted-foreground">Provident Fund</span><span className="text-foreground">${payslipData.providentFund}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Professional Tax</span><span className="text-foreground">${payslipData.professionalTax}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">Income Tax</span><span className="text-foreground">${payslipData.incomeTax}</span></div>
-            <div className="flex justify-between border-t pt-2 font-semibold"><span className="text-foreground">Total Deductions</span><span className="text-destructive">${payslipData.totalDeductions}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Provident Fund</span><span className="text-foreground">${payslip.providentFund}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Professional Tax</span><span className="text-foreground">${payslip.professionalTax}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Income Tax</span><span className="text-foreground">${payslip.incomeTax}</span></div>
+            <div className="flex justify-between border-t pt-2 font-semibold"><span className="text-foreground">Total Deductions</span><span className="text-destructive">${payslip.totalDeductions}</span></div>
           </div>
         </div>
       </div>
       <div className="mt-6 flex justify-between rounded-lg bg-primary/10 p-4">
         <span className="text-lg font-bold text-foreground">Net Salary</span>
-        <span className="text-lg font-bold text-primary">${payslipData.netSalary}</span>
+        <span className="text-lg font-bold text-primary">${payslip.netSalary}</span>
       </div>
     </div>
   </div>
 );
-
+}
 export default ManagerSelfSalary;

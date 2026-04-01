@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { leaveRequests } from '@/utils/dummyData';
+import useAllData from '@/utils/dummyData';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 const EmployeeLeaves = () => {
-  const [data, setData] = useState(leaveRequests);
+  const { leaves } = useAllData();
+  const [data, setData] = useState(leaves);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ type: 'Sick Leave', from: '', to: '', reason: '' });
 

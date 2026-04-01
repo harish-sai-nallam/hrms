@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { attendanceRecords } from '@/utils/dummyData';
+import useAllData from '@/utils/dummyData';
 import { Search } from 'lucide-react';
 
 const ManagerAttendance = () => {
+  const { attendanceRecords } = useAllData(); // ✅ backend data
   const [search, setSearch] = useState('');
   const [dateFilter, setDateFilter] = useState('');
 

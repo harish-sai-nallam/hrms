@@ -1,6 +1,8 @@
-import { leaveRequests } from '@/utils/dummyData';
+import useAllData from '@/utils/dummyData';
 
-const ManagerSelfLeaves = () => (
+const ManagerSelfLeaves = () =>{
+  const {leaves} =useAllData();
+  return (
   <div className="space-y-6 animate-fade-in">
     <div>
       <h1 className="text-2xl font-bold text-foreground">My Leaves</h1>
@@ -22,7 +24,7 @@ const ManagerSelfLeaves = () => (
             <th className="px-4 py-3 text-left font-medium text-foreground">Status</th>
           </tr></thead>
           <tbody>
-            {leaveRequests.slice(0, 2).map(l => (
+            {leaves.slice(0, 2).map(l => (
               <tr key={l.id} className="border-b last:border-0 hover:bg-accent/30">
                 <td className="px-4 py-3 text-foreground">{l.type}</td>
                 <td className="px-4 py-3 text-muted-foreground">{l.from}</td>
@@ -37,5 +39,5 @@ const ManagerSelfLeaves = () => (
     </div>
   </div>
 );
-
+}
 export default ManagerSelfLeaves;

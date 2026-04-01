@@ -1,6 +1,10 @@
-import { attendanceRecords } from '@/utils/dummyData';
+import useAllData from '@/utils/dummyData';
 
-const EmployeeAttendance = () => (
+const EmployeeAttendance = () =>{
+   const { attendance } = useAllData(); // ✅ backend data
+
+  
+  return (
   <div className="space-y-6 animate-fade-in">
     <div>
       <h1 className="text-2xl font-bold text-foreground">Attendance History</h1>
@@ -17,7 +21,7 @@ const EmployeeAttendance = () => (
             <th className="px-4 py-3 text-left font-medium text-foreground">Status</th>
           </tr></thead>
           <tbody>
-            {attendanceRecords.map(a => (
+            {attendance.map(a => (
               <tr key={a.id} className="border-b last:border-0 hover:bg-accent/30">
                 <td className="px-4 py-3 text-muted-foreground">{a.date}</td>
                 <td className="px-4 py-3 text-muted-foreground">{a.clockIn || '-'}</td>
@@ -36,5 +40,5 @@ const EmployeeAttendance = () => (
     </div>
   </div>
 );
-
+}
 export default EmployeeAttendance;

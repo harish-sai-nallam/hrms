@@ -1,10 +1,13 @@
-import { useState } from 'react';
-import { expenses as initialExpenses } from '@/utils/dummyData';
+import { useState, useEffect } from 'react';
+import useAllData from '@/utils/dummyData';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ManagerExpenses = () => {
-  const [data, setData] = useState(initialExpenses);
+  // ✅ Replace useState(initialExpenses) with:
+const { expenses } = useAllData();
+const [data, setData] = useState(expenses);
+useEffect(() => { setData(expenses); }, [expenses]);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ name: '', category: '', amount: 0, description: '' });
 

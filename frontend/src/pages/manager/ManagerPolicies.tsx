@@ -1,7 +1,8 @@
-import { policies } from '@/utils/dummyData';
+import useAllData from '@/utils/dummyData';
 import { FileText } from 'lucide-react';
 
 const ManagerPolicies = () => {
+  const {policies} = useAllData();
   return (
     <div className="space-y-6 animate-fade-in">
       <div>

@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { employees } from '@/utils/dummyData';
+import useAllData from '@/utils/dummyData';
 import { Plus, Pencil, Trash2, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 const EmployeeManagement = () => {
+  const { employees } = useAllData(); // ✅ backend data
   const [data, setData] = useState(employees);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);

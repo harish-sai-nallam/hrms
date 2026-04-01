@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 export type UserRole = 'superadmin' | 'manager' | 'employee';
 
@@ -7,55 +7,113 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
-  avatar?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (name: string, email: string, password: string, role: 'manager' | 'employee') => Promise<boolean>;
+  register: (name: string, email: string, password: string, role: 'manager' | 'employee') => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 }
 
-const mockUsers: Record<string, User> = {
-  'superadmin@gmail.com': { id: '1', name: 'Super Admin', email: 'superadmin@gmail.com', role: 'superadmin' },
-  'manager@gmail.com': { id: '2', name: 'John Manager', email: 'manager@gmail.com', role: 'manager' },
-  'employee@gmail.com': { id: '3', name: 'Jane Employee', email: 'employee@gmail.com', role: 'employee' },
-};
-
-const registeredUsers: Record<string, User> = {};
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const mapRole = (role: string): UserRole => {
+  if (role === "super_admin") return "superadmin";
+  if (role === "admin") return "manager";
+  if (role === "employee") return "employee";
+  throw new Error("Invalid role from backend");
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('hrm_user');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [user, setUser] = useState<User | null>(null);
 
-  const login = useCallback(async (email: string, _password: string): Promise<boolean> => {
-    const found = mockUsers[email] || registeredUsers[email];
-    if (found) {
-      setUser(found);
-      localStorage.setItem('hrm_user', JSON.stringify(found));
+  // ================= LOGIN =================
+  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await res.json();
+      if (!res.ok) return false;
+
+      const newUser: User = {
+        id: String(data.id),
+        name: data.name,
+        email,
+        role: mapRole(data.role)
+      };
+
+      setUser(newUser);
+      localStorage.setItem("hrm_user", JSON.stringify(newUser));
       return true;
+
+    } catch (err) {
+      console.error("Login error:", err);
+      return false;
     }
-    return false;
   }, []);
 
-  const register = useCallback(async (name: string, email: string, _password: string, role: 'manager' | 'employee'): Promise<boolean> => {
-    if (mockUsers[email] || registeredUsers[email]) return false;
-    const newUser: User = { id: Date.now().toString(), name, email, role };
-    registeredUsers[email] = newUser;
-    setUser(newUser);
-    localStorage.setItem('hrm_user', JSON.stringify(newUser));
-    return true;
-  }, []);
+  // ================= REGISTER =================
+  const register = useCallback(async (
+    name: string,
+    email: string,
+    password: string,
+    role: 'manager' | 'employee'
+  ): Promise<void> => {
+    const backendRole = role === "manager" ? "admin" : "employee";
 
+    const res = await fetch("http://localhost:5000/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ name, email, password, role: backendRole })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Registration failed");
+    }
+
+    await login(email, password);
+  }, [login]);
+
+  // ================= LOGOUT =================
   const logout = useCallback(() => {
     setUser(null);
-    localStorage.removeItem('hrm_user');
+    localStorage.removeItem("hrm_user");
+  }, []);
+
+  // ================= RESTORE FROM SESSION =================
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/auth/me", {
+          credentials: "include"
+        });
+
+        if (!res.ok) { setUser(null); return; }
+
+        const data = await res.json();
+        setUser({
+          id: String(data.id),
+          name: data.name,
+          email: data.email,
+          role: mapRole(data.role)
+        });
+
+      } catch {
+        setUser(null);
+      }
+    };
+
+    checkSession();
   }, []);
 
   return (

@@ -9,7 +9,7 @@ const AdminManagement = () => {
 
   const fetchAdmins = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/admins", {
+      const res = await fetch("http://localhost:5000/api/admin", {
         credentials: "include"
       });
       const data = await res.json();
@@ -30,7 +30,7 @@ const AdminManagement = () => {
     }
 
     try {
-      await fetch("http://localhost:5000/api/admins", {
+      await fetch("http://localhost:5000/api/admin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

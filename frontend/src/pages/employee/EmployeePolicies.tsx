@@ -1,7 +1,9 @@
-import { policies } from '@/utils/dummyData';
+import useAllData from '@/utils/dummyData';
 import { FileText } from 'lucide-react';
 
-const EmployeePolicies = () => (
+const EmployeePolicies = () => {
+  const { policies } = useAllData();
+  return(
   <div className="space-y-6 animate-fade-in">
     <div>
       <h1 className="text-2xl font-bold text-foreground">Company Policies</h1>
@@ -23,5 +25,6 @@ const EmployeePolicies = () => (
     </div>
   </div>
 );
+}
 
 export default EmployeePolicies;

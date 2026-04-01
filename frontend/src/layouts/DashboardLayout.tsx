@@ -65,11 +65,15 @@ const DashboardLayout = () => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
 
-  if (!user) return null;
-  const navItems = roleNavItems[user.role];
+  // ✅ FIX 1: prevent blank screen
+  if (!user) return <div className="p-6">Loading...</div>;
+
+  // ✅ FIX 2: safe nav
+  const navItems = roleNavItems[user.role] || [];
 
   const handleLogout = () => {
     logout();
@@ -81,16 +85,24 @@ const DashboardLayout = () => {
 
   return (
     <div className="flex min-h-screen bg-background">
+
       {/* Sidebar */}
       <aside className={`fixed inset-y-0 left-0 z-40 flex flex-col border-r bg-card transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-0 -translate-x-full md:w-16 md:translate-x-0'}`}>
+        
         <div className="flex h-16 items-center justify-between border-b px-4">
           {sidebarOpen && (
             <Link to="/" className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-xs">SI</div>
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-xs">
+                SI
+              </div>
               <span className="text-sm font-bold text-foreground">SHNOOR INTL</span>
             </Link>
           )}
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="hidden rounded-lg p-1.5 text-muted-foreground hover:bg-accent md:block">
+
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="hidden rounded-lg p-1.5 text-muted-foreground hover:bg-accent md:block"
+          >
             {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </button>
         </div>
@@ -98,6 +110,7 @@ const DashboardLayout = () => {
         <nav className="flex-1 overflow-y-auto p-3 space-y-1">
           {navItems.map((item) => (
             <div key={item.label}>
+
               {item.children ? (
                 <>
                   <button
@@ -108,15 +121,24 @@ const DashboardLayout = () => {
                       <item.icon className="h-4 w-4 shrink-0" />
                       {sidebarOpen && item.label}
                     </span>
-                    {sidebarOpen && <ChevronDown className={`h-3 w-3 transition-transform ${expandedMenu === item.label ? 'rotate-180' : ''}`} />}
+
+                    {sidebarOpen && (
+                      <ChevronDown className={`h-3 w-3 transition-transform ${expandedMenu === item.label ? 'rotate-180' : ''}`} />
+                    )}
                   </button>
+
                   {expandedMenu === item.label && sidebarOpen && (
                     <div className="ml-7 mt-1 space-y-1">
                       {item.children.map((child) => (
-                        <Link key={child.to} to={child.to}
+                        <Link
+                          key={child.to}
+                          to={child.to}
                           className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
-                            isActive(child.to) ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium' : 'text-muted-foreground hover:bg-accent'
-                          }`}>
+                            isActive(child.to)
+                              ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+                              : 'text-muted-foreground hover:bg-accent'
+                          }`}
+                        >
                           {child.label}
                         </Link>
                       ))}
@@ -124,55 +146,85 @@ const DashboardLayout = () => {
                   )}
                 </>
               ) : (
-                <Link to={item.to}
-                  className={`sidebar-item ${isActive(item.to) ? 'sidebar-item-active' : 'sidebar-item-inactive'}`}>
+                <Link
+                  to={item.to}
+                  className={`sidebar-item ${
+                    isActive(item.to) ? 'sidebar-item-active' : 'sidebar-item-inactive'
+                  }`}
+                >
                   <item.icon className="h-4 w-4 shrink-0" />
                   {sidebarOpen && item.label}
                 </Link>
               )}
+
             </div>
           ))}
         </nav>
 
         <div className="border-t p-3">
-          <button onClick={handleLogout}
-            className="sidebar-item sidebar-item-inactive w-full text-destructive hover:bg-destructive/10 hover:text-destructive">
+          <button
+            onClick={handleLogout}
+            className="sidebar-item sidebar-item-inactive w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
+          >
             <LogOut className="h-4 w-4 shrink-0" />
             {sidebarOpen && 'Logout'}
           </button>
         </div>
+
       </aside>
 
       {/* Main Content */}
       <div className={`flex flex-1 flex-col transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : 'md:ml-16'}`}>
+
         {/* Top Navbar */}
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-card px-4 md:px-6">
+          
           <div className="flex items-center gap-3">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="rounded-lg p-2 text-muted-foreground hover:bg-accent md:hidden">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="rounded-lg p-2 text-muted-foreground hover:bg-accent md:hidden"
+            >
               <Menu className="h-5 w-5" />
             </button>
-            <h2 className="text-lg font-semibold text-foreground">{roleTitles[user.role]} Panel</h2>
+
+            <h2 className="text-lg font-semibold text-foreground">
+              {roleTitles[user.role]} Panel
+            </h2>
           </div>
+
           <div className="flex items-center gap-3">
+
+            {/* ✅ FIX 3: safe user display */}
             <div className="text-right">
-              <p className="text-sm font-medium text-foreground">{user.name}</p>
-              <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
+              <p className="text-sm font-medium text-foreground">
+                {user.name || user.email}
+              </p>
+              <p className="text-xs text-muted-foreground capitalize">
+                {user.role}
+              </p>
             </div>
+
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-              {user.name.charAt(0)}
+              {(user.name || user.email).charAt(0)}
             </div>
+
           </div>
         </header>
 
         <main className="flex-1 p-4 md:p-6">
           <Outlet />
         </main>
+
       </div>
 
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-30 bg-foreground/20 md:hidden" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 z-30 bg-foreground/20 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
+
     </div>
   );
 };

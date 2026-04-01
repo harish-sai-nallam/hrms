@@ -1,6 +1,6 @@
 const router = require("express").Router();
 
-const { getHolidays } = require("../controllers/holidayController");
+const { getHolidays } = require("../controllers/holidaysController");
 
 router.get("/", getHolidays);
 

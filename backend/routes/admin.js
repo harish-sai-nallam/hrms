@@ -12,5 +12,4 @@ const {
 router.get("/", auth, role(["super_admin"]), getSuperAdmins);
 router.post("/", auth, role(["super_admin"]), createSuperAdmin);
 router.delete("/:id", auth, role(["super_admin"]), deleteSuperAdmin);
-
 module.exports = router;

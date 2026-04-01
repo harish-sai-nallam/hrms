@@ -1,10 +1,14 @@
-import { useState } from 'react';
-import { holidays as initialHolidays } from '@/utils/dummyData';
+// ✅ Replace with
+import { useState, useEffect } from 'react';
+import useAllData from '@/utils/dummyData';
 import { Plus, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ManagerHolidays = () => {
-  const [data, setData] = useState(initialHolidays);
+  // ✅ Add this inside the component
+const { holidays } = useAllData();
+const [data, setData] = useState(holidays);
+useEffect(() => { setData(holidays); }, [holidays]);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ name: '', date: '', type: 'Public' });
 

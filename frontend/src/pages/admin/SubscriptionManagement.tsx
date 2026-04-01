@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { companies } from '@/utils/dummyData';
+import useAllData from '@/utils/dummyData';
 import { toast } from 'sonner';
 
 const SubscriptionManagement = () => {
+  const { companies } = useAllData(); // ✅ backend data
   const [data, setData] = useState(companies);
 
   const updatePlan = (id: string, plan: string) => {

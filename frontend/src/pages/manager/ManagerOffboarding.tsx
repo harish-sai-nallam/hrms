@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { offboardingRecords as initialRecords } from '@/utils/dummyData';
+import { useState,useEffect } from 'react';
+import useAllData from '@/utils/dummyData';
 import { UserMinus, Plus, Pencil, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -25,7 +25,9 @@ const emptyRecord: Omit<OffboardingRecord, 'id'> = {
 };
 
 const ManagerOffboarding = () => {
-  const [records, setRecords] = useState<OffboardingRecord[]>(initialRecords as OffboardingRecord[]);
+  const { offboarding } = useAllData();
+  const [records, setRecords] = useState<OffboardingRecord[]>(offboarding as OffboardingRecord[]);
+  useEffect(() => { setRecords(offboarding as OffboardingRecord[]); }, [offboarding]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyRecord);

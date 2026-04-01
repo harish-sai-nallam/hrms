@@ -19,13 +19,14 @@ const RegisterPage = () => {
     if (!name || !email || !password) { toast.error('Please fill all fields'); return; }
     if (password.length < 6) { toast.error('Password must be at least 6 characters'); return; }
     setLoading(true);
-    const success = await register(name, email, password, role);
-    setLoading(false);
-    if (success) {
+    try {
+      await register(name, email, password, role);
       toast.success('Registration successful!');
       navigate(role === 'manager' ? '/manager' : '/employee');
-    } else {
-      toast.error('Email already exists. Try logging in instead.');
+    } catch (err: any) {
+      toast.error(err.message || 'Registration failed');
+    } finally {
+      setLoading(false);
     }
   };
 
