@@ -1,12 +1,14 @@
 const router = require("express").Router();
-const { login, register } = require("../controllers/authController");
+const { login, register, logout } = require("../controllers/authController");
 
-router.post("/login", login);
+router.post("/login",    login);
 router.post("/register", register);
-// routes/auth.js
+router.post("/logout",   logout);   // BUG FIX 7: was missing
+
+// BUG FIX 2: /me now returns name because session stores it
 router.get("/me", (req, res) => {
   if (!req.session.user) return res.status(401).json({});
-  res.json(req.session.user);
+  res.json(req.session.user);   // { id, name, email, role }
 });
 
 module.exports = router;

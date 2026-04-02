@@ -3,7 +3,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth, UserRole } from '@/context/AuthContext';
 import {
   LayoutDashboard, Users, Calendar, Clock, DollarSign, FileText, Settings,
-  Building2, CreditCard, Palette, ShieldCheck, LogOut, Menu, X, ChevronDown,
+  Building2, CreditCard, Palette, ShieldCheck, LogOut, Menu, X,
   Briefcase, Gift, UserMinus, Package, User
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -15,43 +15,61 @@ interface NavItem {
   children?: { to: string; label: string }[];
 }
 
-const roleNavItems: Record<UserRole, NavItem[]> = {
+interface NavSection {
+  sectionLabel?: string; // optional heading shown above this group
+  items: NavItem[];
+}
+
+const roleNavSections: Record<UserRole, NavSection[]> = {
   superadmin: [
-    { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/admin/companies', icon: Building2, label: 'Companies' },
-    { to: '/admin/admins', icon: ShieldCheck, label: 'Admin Management' },
-    { to: '/admin/subscriptions', icon: CreditCard, label: 'Subscriptions' },
-    { to: '/admin/customization', icon: Palette, label: 'UI Customization' },
-    { to: '/admin/settings', icon: Settings, label: 'Settings' },
+    {
+      items: [
+        { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
+        { to: '/admin/companies', icon: Building2, label: 'Companies' },
+        { to: '/admin/admins', icon: ShieldCheck, label: 'Admin Management' },
+        { to: '/admin/subscriptions', icon: CreditCard, label: 'Subscriptions' },
+        { to: '/admin/customization', icon: Palette, label: 'UI Customization' },
+        { to: '/admin/settings', icon: Settings, label: 'Settings' },
+      ],
+    },
   ],
   manager: [
-    { to: '/manager', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/manager/employees', icon: Users, label: 'Employees' },
-    { to: '/manager/attendance', icon: Clock, label: 'Attendance' },
-    { to: '/manager/holidays', icon: Calendar, label: 'Holidays' },
-    { to: '/manager/expenses', icon: DollarSign, label: 'Expenses' },
-    { to: '/manager/policies', icon: FileText, label: 'Policies' },
-    { to: '/manager/offboarding', icon: UserMinus, label: 'Offboarding' },
     {
-      to: '#', icon: User, label: 'Self Service',
-      children: [
-        { to: '/manager/my-attendance', label: 'My Attendance' },
-        { to: '/manager/my-leaves', label: 'My Leaves' },
-        { to: '/manager/my-salary', label: 'My Salary' },
-        { to: '/manager/profile', label: 'Profile' },
+      sectionLabel: 'Team Management',
+      items: [
+        { to: '/manager', icon: LayoutDashboard, label: 'Dashboard' },
+        { to: '/manager/employees', icon: Users, label: 'Employees' },
+        { to: '/manager/attendance', icon: Clock, label: 'Attendance' },
+        { to: '/manager/holidays', icon: Calendar, label: 'Holidays' },
+        { to: '/manager/expenses', icon: DollarSign, label: 'Expenses' },
+        { to: '/manager/policies', icon: FileText, label: 'Policies' },
+        { to: '/manager/offboarding', icon: UserMinus, label: 'Offboarding' },
+      ],
+    },
+    {
+      sectionLabel: 'My Self',
+      items: [
+        { to: '/manager/my-attendance', icon: Clock, label: 'My Attendance' },
+        { to: '/manager/my-leaves', icon: Briefcase, label: 'My Leaves' },
+        { to: '/manager/my-salary', icon: DollarSign, label: 'My Salary' },
+        { to: '/manager/profile', icon: User, label: 'My Profile' },
       ],
     },
   ],
   employee: [
-    { to: '/employee', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/employee/clock', icon: Clock, label: 'Clock In/Out' },
-    { to: '/employee/attendance', icon: Calendar, label: 'Attendance' },
-    { to: '/employee/leaves', icon: Briefcase, label: 'Leaves' },
-    { to: '/employee/salary', icon: DollarSign, label: 'Salary' },
-    { to: '/employee/holidays', icon: Gift, label: 'Holidays' },
-    { to: '/employee/policies', icon: FileText, label: 'Policies' },
-    { to: '/employee/expenses', icon: Package, label: 'Expenses' },
-    { to: '/employee/profile', icon: User, label: 'Profile' },
+    {
+      items: [
+        { to: '/employee', icon: LayoutDashboard, label: 'Dashboard' },
+        { to: '/employee/clock', icon: Clock, label: 'Clock In/Out' },
+        { to: '/employee/attendance', icon: Calendar, label: 'Attendance' },
+        { to: '/employee/leaves', icon: Briefcase, label: 'Leaves' },
+        { to: '/employee/salary', icon: DollarSign, label: 'Salary' },
+        { to: '/employee/holidays', icon: Gift, label: 'Holidays' },
+        { to: '/employee/policies', icon: FileText, label: 'Policies' },
+        { to: '/employee/expenses', icon: Package, label: 'Expenses' },
+        { to: '/employee/profile', icon: User, label: 'Profile' },
+      ],
+    },
   ],
 };
 
@@ -67,13 +85,12 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [expandedMenu, setExpandedMenu] = useState<string | null>(null);
 
   // ✅ FIX 1: prevent blank screen
   if (!user) return <div className="p-6">Loading...</div>;
 
   // ✅ FIX 2: safe nav
-  const navItems = roleNavItems[user.role] || [];
+  const navSections = roleNavSections[user.role] || [];
 
   const handleLogout = () => {
     logout();
@@ -108,45 +125,23 @@ const DashboardLayout = () => {
         </div>
 
         <nav className="flex-1 overflow-y-auto p-3 space-y-1">
-          {navItems.map((item) => (
-            <div key={item.label}>
-
-              {item.children ? (
-                <>
-                  <button
-                    onClick={() => setExpandedMenu(expandedMenu === item.label ? null : item.label)}
-                    className="sidebar-item sidebar-item-inactive w-full justify-between"
-                  >
-                    <span className="flex items-center gap-3">
-                      <item.icon className="h-4 w-4 shrink-0" />
-                      {sidebarOpen && item.label}
-                    </span>
-
-                    {sidebarOpen && (
-                      <ChevronDown className={`h-3 w-3 transition-transform ${expandedMenu === item.label ? 'rotate-180' : ''}`} />
-                    )}
-                  </button>
-
-                  {expandedMenu === item.label && sidebarOpen && (
-                    <div className="ml-7 mt-1 space-y-1">
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.to}
-                          to={child.to}
-                          className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
-                            isActive(child.to)
-                              ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                              : 'text-muted-foreground hover:bg-accent'
-                          }`}
-                        >
-                          {child.label}
-                        </Link>
-                      ))}
-                    </div>
+          {navSections.map((section, sIdx) => (
+            <div key={sIdx}>
+              {/* Section divider + label (skip for first section with no label) */}
+              {section.sectionLabel && (
+                <div className={`${sIdx > 0 ? 'mt-4 pt-3 border-t border-border' : 'mt-2'}`}>
+                  {sidebarOpen && (
+                    <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                      {section.sectionLabel}
+                    </p>
                   )}
-                </>
-              ) : (
+                  {!sidebarOpen && <div className="my-2 border-t border-border" />}
+                </div>
+              )}
+
+              {section.items.map((item) => (
                 <Link
+                  key={item.to}
                   to={item.to}
                   className={`sidebar-item ${
                     isActive(item.to) ? 'sidebar-item-active' : 'sidebar-item-inactive'
@@ -155,8 +150,7 @@ const DashboardLayout = () => {
                   <item.icon className="h-4 w-4 shrink-0" />
                   {sidebarOpen && item.label}
                 </Link>
-              )}
-
+              ))}
             </div>
           ))}
         </nav>
