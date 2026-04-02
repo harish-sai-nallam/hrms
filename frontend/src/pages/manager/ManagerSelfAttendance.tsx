@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Clock, LogIn, LogOut, Timer, CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -7,36 +7,65 @@ interface AttendanceEntry {
   date: string;
   checkIn: string;
   checkOut: string;
-  status: 'Present' | 'Late' | 'Absent';
+  clockIn?: string;
+  clockOut?: string;
+  status: string;
 }
-
-const pastRecords: AttendanceEntry[] = [
-  { id: '1', date: '2026-03-31', checkIn: '09:02', checkOut: '17:35', status: 'Present' },
-  { id: '2', date: '2026-03-28', checkIn: '09:45', checkOut: '17:10', status: 'Late' },
-  { id: '3', date: '2026-03-27', checkIn: '08:55', checkOut: '17:30', status: 'Present' },
-  { id: '4', date: '2026-03-26', checkIn: '09:00', checkOut: '17:00', status: 'Present' },
-  { id: '5', date: '2026-03-25', checkIn: '09:10', checkOut: '17:20', status: 'Present' },
-];
 
 const ManagerSelfAttendance = () => {
   const [clockedIn, setClockedIn] = useState(false);
   const [checkInTime, setCheckInTime] = useState<string | null>(null);
   const [totalHours, setTotalHours] = useState<string | null>(null);
+  const [records, setRecords] = useState<AttendanceEntry[]>([]);
 
-  const now = () => new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  useEffect(() => {
+    const fetchMyAttendance = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/attendance/me', {
+          credentials: 'include',
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setRecords(Array.isArray(data) ? data : []);
+        }
+      } catch {
+        // silently fall back to empty list
+        setRecords([]);
+      }
+    };
+    fetchMyAttendance();
+  }, []);
 
-  const handleClockIn = () => {
+  const now = () =>
+    new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+  const handleClockIn = async () => {
     const t = now();
     setClockedIn(true);
     setCheckInTime(t);
     setTotalHours(null);
     toast.success(`Clocked in at ${t}`);
+    try {
+      await fetch('http://localhost:5000/api/attendance/clock-in', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch { /* ignore */ }
   };
 
-  const handleClockOut = () => {
+  const handleClockOut = async () => {
     setClockedIn(false);
-    setTotalHours('8h 15m');
     toast.success(`Clocked out at ${now()}`);
+    try {
+      const res = await fetch('http://localhost:5000/api/attendance/clock-out', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.totalHours) setTotalHours(data.totalHours);
+      }
+    } catch { /* ignore */ }
   };
 
   return (
@@ -46,7 +75,6 @@ const ManagerSelfAttendance = () => {
         <p className="text-sm text-muted-foreground">Clock in/out and view your attendance history</p>
       </div>
 
-      {/* Clock In/Out Section */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="glass-card p-5 flex items-center gap-4">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
@@ -80,17 +108,22 @@ const ManagerSelfAttendance = () => {
       </div>
 
       <div className="flex gap-3">
-        <button onClick={handleClockIn} disabled={clockedIn}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        <button
+          onClick={handleClockIn}
+          disabled={clockedIn}
+          className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           <LogIn className="h-4 w-4" /> Clock In
         </button>
-        <button onClick={handleClockOut} disabled={!clockedIn}
-          className="inline-flex items-center gap-2 rounded-lg border border-input px-5 py-2.5 text-sm font-medium text-foreground hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        <button
+          onClick={handleClockOut}
+          disabled={!clockedIn}
+          className="inline-flex items-center gap-2 rounded-lg border border-input px-5 py-2.5 text-sm font-medium text-foreground hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           <LogOut className="h-4 w-4" /> Clock Out
         </button>
       </div>
 
-      {/* Attendance History */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <CalendarDays className="h-5 w-5 text-primary" />
@@ -108,20 +141,30 @@ const ManagerSelfAttendance = () => {
                 </tr>
               </thead>
               <tbody>
-                {pastRecords.map(a => (
-                  <tr key={a.id} className="border-b last:border-0 hover:bg-accent/30 transition-colors">
-                    <td className="px-4 py-3 text-muted-foreground">{a.date}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{a.checkIn}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{a.checkOut}</td>
-                    <td className="px-4 py-3">
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        a.status === 'Present' ? 'bg-success/10 text-success' :
-                        a.status === 'Late' ? 'bg-warning/10 text-warning' :
-                        'bg-destructive/10 text-destructive'
-                      }`}>{a.status}</span>
+                {records.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-8 text-center text-muted-foreground">
+                      No attendance records found.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  records.map((a) => (
+                    <tr key={a.id} className="border-b last:border-0 hover:bg-accent/30 transition-colors">
+                      <td className="px-4 py-3 text-muted-foreground">{a.date}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{a.checkIn || a.clockIn || '—'}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{a.checkOut || a.clockOut || '—'}</td>
+                      <td className="px-4 py-3">
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          a.status === 'Present' || a.status === 'present'
+                            ? 'bg-success/10 text-success'
+                            : a.status === 'Late' || a.status === 'late'
+                            ? 'bg-warning/10 text-warning'
+                            : 'bg-destructive/10 text-destructive'
+                        }`}>{a.status}</span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

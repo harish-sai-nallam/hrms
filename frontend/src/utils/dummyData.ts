@@ -9,20 +9,14 @@ export default function useAllData() {
   const [expenses, setExpenses] = useState([]);
   const [policies, setPolicies] = useState([]);
   const [offboarding, setOffboarding] = useState([]);
-  const [payslip, setPayslip] = useState(null);
+  const [payslip, setPayslip] = useState<Record<string, number> | null>(null);
 
   const fetchSafe = async (url: string, setter: any) => {
     try {
       const res = await fetch(url, { credentials: "include" });
-
-      if (!res.ok) {
-        setter([]);
-        return;
-      }
-
+      if (!res.ok) { setter([]); return; }
       const data = await res.json();
       setter(data);
-
     } catch (err) {
       console.error("Fetch error:", url, err);
       setter([]);
@@ -44,16 +38,14 @@ export default function useAllData() {
 
       try {
         const res = await fetch("http://localhost:5000/api/payslip", {
-          credentials: "include"
+          credentials: "include",
         });
-
         if (res.ok) {
           const data = await res.json();
           setPayslip(data);
         } else {
           setPayslip(null);
         }
-
       } catch {
         setPayslip(null);
       }
@@ -66,11 +58,12 @@ export default function useAllData() {
     companies,
     employees,
     attendance,
+    attendanceRecords: attendance, // alias — ManagerAttendance uses this key
     leaves,
     holidays,
     expenses,
     policies,
     offboarding,
-    payslip
+    payslip,
   };
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import useAllData from '@/utils/dummyData';
 import { Plus, Pencil, Trash2, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 const EmployeeManagement = () => {
   const { employees } = useAllData(); // ✅ backend data
   const [data, setData] = useState(employees);
+  useEffect(() => { setData(employees); }, [employees]);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState<string | null>(null);
